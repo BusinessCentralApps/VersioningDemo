@@ -1,4 +1,4 @@
-﻿name: 'Create a new app'
+﻿name: 'Create a new performance test app'
 
 on:
   workflow_dispatch:
@@ -9,21 +9,27 @@ on:
         default: '.'
       name:
         description: Name
-        required: true      
+        required: true
+        default: '<YourAppName>.PerformanceTest'         
       publisher:
         description: Publisher
         required: true
       idrange:
-        description: ID range (from..to)
+        description: ID range
         required: true
+        default: '50000..99999'  
       sampleCode:
         description: Include Sample code (Y/N)
+        required: false
+        default: 'Y'
+      sampleSuite:
+        description: Include Sample BCPT Suite (Y/N)
         required: false
         default: 'Y'
       directCommit:
         description: Direct COMMIT (Y/N)
         required: false
-        default: "N"
+        default: 'N'
 
 permissions:
   contents: write
@@ -34,7 +40,7 @@ defaults:
     shell: powershell
 
 jobs:
-  CreateApp:
+  CreatePerformanceTestApp:
     runs-on: [ windows-latest ]
     steps:
       - name: Checkout
@@ -45,26 +51,20 @@ jobs:
         uses: freddydk/AL-Go-Actions/WorkflowInitialize@main
         with:
           shell: powershell
-          eventId: "DO0092"
+          eventId: "DO0102"
 
-      - name: Read settings
-        uses: freddydk/AL-Go-Actions/ReadSettings@main
-        with:
-          shell: powershell
-          parentTelemetryScopeJson: ${{ steps.init.outputs.telemetryScopeJson }}
-          get: type
-
-      - name: Creating a new app
+      - name: Creating a new test app
         uses: freddydk/AL-Go-Actions/CreateApp@main
         with:
           shell: powershell
           parentTelemetryScopeJson: ${{ steps.init.outputs.telemetryScopeJson }}
           project: ${{ github.event.inputs.project }}
-          type: ${{ env.type }}
+          type: 'Performance Test App'
           name: ${{ github.event.inputs.name }}
           publisher: ${{ github.event.inputs.publisher }}
           idrange: ${{ github.event.inputs.idrange }}
           sampleCode: ${{ github.event.inputs.sampleCode }}
+          sampleSuite: ${{ github.event.inputs.sampleSuite }}
           directCommit: ${{ github.event.inputs.directCommit }}
 
       - name: Finalize the workflow
@@ -72,5 +72,5 @@ jobs:
         uses: freddydk/AL-Go-Actions/WorkflowPostProcess@main
         with:
           shell: powershell
-          eventId: "DO0092"
+          eventId: "DO0102"
           telemetryScopeJson: ${{ steps.init.outputs.telemetryScopeJson }}
